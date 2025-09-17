@@ -1,6 +1,16 @@
+using FormularioBack.Context;
+using FormularioBack.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Agregar DbContext con conexión de appsettings.json
+builder.Services.AddDbContext<FormularioDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("FormularioDB")));
+
+builder.Services.AddScoped<FormularioService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

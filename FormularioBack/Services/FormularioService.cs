@@ -5,7 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FormularioBack.Services
 {
-    public class FormularioService
+    public interface IFormularioService
+    {
+        public Task<Formulario> CrearFormularioAsync(CrearFormularioDto dto);
+        public Task<ObtenerFormularioDto> ObtenerPreguntasDeFormularioById(int formularioId);
+    }
+
+    public class FormularioService: IFormularioService
     {
         
         private readonly FormularioDbContext _context;
@@ -62,7 +68,6 @@ namespace FormularioBack.Services
 
             return formulario;
         }
-
 
         public async Task<ObtenerFormularioDto> ObtenerPreguntasDeFormularioById(int formularioId)
         {

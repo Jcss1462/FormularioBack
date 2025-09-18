@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<FormularioDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("FormularioDB")));
 
-builder.Services.AddScoped<FormularioService>();
+builder.Services.AddScoped<IFormularioService, FormularioService>();
 builder.Services.AddScoped<IRespuestasService, RespuestasService>();
 
 builder.Services.AddControllers();

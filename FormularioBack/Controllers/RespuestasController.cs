@@ -25,5 +25,12 @@ namespace FormularioBack.Controllers
 
             return Ok(new { mensaje = "Respuestas guardadas correctamente", idRespuesta });
         }
+
+        [HttpGet("Resumen")]
+        public async Task<IActionResult> ObtenerResumenFormularios()
+        {
+            var resumen = await _respuestasService.ObtenerResumenFormulariosAsync();
+            return Ok(resumen);
+        }
     }
 }

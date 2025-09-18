@@ -1,12 +1,16 @@
 ﻿using FormularioBack.Context;
 using FormularioBack.Dtos;
 using FormularioBack.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace FormularioBack.Services
 {
     public interface IRespuestasService
     {
         Task<int> GuardarRespuestasAsync(EnviarRespuestasFormularioDto dto);
+
+        Task<List<FormularioResumenDto>> ObtenerResumenFormulariosAsync();
     }
 
 
@@ -43,6 +47,46 @@ namespace FormularioBack.Services
             await _context.SaveChangesAsync();
 
             return respuesta.IdRespuesta; // Devuelvo el id generado
+        }
+
+        public async Task<List<FormularioResumenDto>> ObtenerResumenFormulariosAsync()
+        {
+            // Traigo solo lo necesario desde EF
+            var formulariosDb = await _context.Formularios
+                .Include(f => f.FormularioHasPregunta)
+                .Include(f => f.Respuesta)
+                    .ThenInclude(r => r.RespuestasPregunta)
+                        .ThenInclude(rp => rp.IdPreguntaNavigation)
+                            .ThenInclude(p => p.Opciones)
+                .ToListAsync();
+
+
+            // Ahora calculo en memoria
+            var formularios = formulariosDb.Select(f => new FormularioResumenDto
+            {
+                IdFormulario = f.IdFormulario,
+                Nombre = f.Nombre,
+                CantidadRespuestas = f.Respuesta.Count,
+                PuntajePromedio = f.Respuesta.Any()
+                    ? f.Respuesta
+                        .Select(r =>
+                        {
+                            //En caso de que no halla preguntas retorno 0, para evtar division por 0
+                            if (r.IdFormularioNavigation.FormularioHasPregunta.Count == 0)
+                                return 0;
+
+                            var correctas = r.RespuestasPregunta.Count(rp =>
+                                rp.IdOpcionSeleccionada != null &&
+                                rp.IdPreguntaNavigation.Opciones.Any(o => o.Correcta && o.IdOpcion == rp.IdOpcionSeleccionada)
+                            );
+
+                            return (double)correctas / r.IdFormularioNavigation.FormularioHasPregunta.Count * 100;
+                        })
+                        .Average()
+                    : 0
+            }).ToList();
+
+            return formularios;
         }
     }
 }

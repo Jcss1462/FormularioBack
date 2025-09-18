@@ -11,6 +11,7 @@ builder.Services.AddDbContext<FormularioDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("FormularioDB")));
 
 builder.Services.AddScoped<FormularioService>();
+builder.Services.AddScoped<IRespuestasService, RespuestasService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

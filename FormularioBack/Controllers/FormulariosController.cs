@@ -30,9 +30,9 @@ namespace FormularioBack.Controllers
         [HttpGet("ObtenerPreguntasDeFormularioById/{formularioId}")]
         public async Task<IActionResult> ObtenerPreguntasDeFormularioById(int formularioId)
         {
-            var preguntas = await _service.ObtenerPreguntasDeFormularioById(formularioId);
+            var formulario = await _service.ObtenerPreguntasDeFormularioById(formularioId);
 
-            return Ok(preguntas);
+            return Ok(formulario);
         }
 
 

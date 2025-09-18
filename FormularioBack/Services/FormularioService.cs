@@ -64,27 +64,35 @@ namespace FormularioBack.Services
         }
 
 
-        public async Task<ObtenerPreguntasFormularioDto> ObtenerPreguntasDeFormularioById(int formularioId)
+        public async Task<ObtenerFormularioDto> ObtenerPreguntasDeFormularioById(int formularioId)
         {
-            ObtenerPreguntasFormularioDto? preguntas = await _context.Preguntas
-                .Where(p => p.FormularioHasPregunta.Any(f => f.IdFormulario == formularioId))
-                .Select(p => new ObtenerPreguntasFormularioDto
-                {
-                    IdFormulario = formularioId,
-                    IdPregunta = p.IdPregunta,
-                    Pregunta = p.Pregunta1,
-                    Opciones = p.Opciones.Select(o => new ObtenerOpcionDto
-                    {
-                        IdOpcion = o.IdOpcion,
-                        Texto = o.Texto
-                    }).ToList()
-                }).FirstOrDefaultAsync();
+            ObtenerFormularioDto? formulario = await _context.Formularios
+                                .Where(f => f.IdFormulario == formularioId)
+                                .Select(f => new ObtenerFormularioDto
+                                {
+                                    IdFormulario = f.IdFormulario,
+                                    Nombre = f.Nombre,
+                                    Preguntas = f.FormularioHasPregunta
+                                        .Select(fp => new ObtenerPreguntaDto
+                                        {
+                                            IdPregunta = fp.IdPreguntaNavigation.IdPregunta,
+                                            Pregunta = fp.IdPreguntaNavigation.Pregunta1,
+                                            Opciones = fp.IdPreguntaNavigation.Opciones
+                                                .Select(o => new ObtenerOpcionDto
+                                                {
+                                                    IdOpcion = o.IdOpcion,
+                                                    Texto = o.Texto
+                                                }).ToList()
+                                        }).ToList()
+                                })
+                                .FirstOrDefaultAsync();
 
-            if (preguntas == null) {
+
+            if (formulario == null) {
                 throw new Exception("No se encontro el formulario con Id:" + formularioId);
             }
 
-            return preguntas;
+            return formulario;
         }
 
 

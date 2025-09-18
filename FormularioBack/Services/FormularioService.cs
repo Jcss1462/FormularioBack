@@ -1,6 +1,7 @@
 ﻿using FormularioBack.Context;
 using FormularioBack.Dtos;
 using FormularioBack.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FormularioBack.Services
 {
@@ -63,6 +64,29 @@ namespace FormularioBack.Services
         }
 
 
-     
+        public async Task<ObtenerPreguntasFormularioDto> ObtenerPreguntasDeFormularioById(int formularioId)
+        {
+            ObtenerPreguntasFormularioDto? preguntas = await _context.Preguntas
+                .Where(p => p.FormularioHasPregunta.Any(f => f.IdFormulario == formularioId))
+                .Select(p => new ObtenerPreguntasFormularioDto
+                {
+                    IdFormulario = formularioId,
+                    IdPregunta = p.IdPregunta,
+                    Pregunta = p.Pregunta1,
+                    Opciones = p.Opciones.Select(o => new ObtenerOpcionDto
+                    {
+                        IdOpcion = o.IdOpcion,
+                        Texto = o.Texto
+                    }).ToList()
+                }).FirstOrDefaultAsync();
+
+            if (preguntas == null) {
+                throw new Exception("No se encontro el formulario con Id:" + formularioId);
+            }
+
+            return preguntas;
+        }
+
+
     }
 }

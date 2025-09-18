@@ -15,7 +15,7 @@ namespace FormularioBack.Controllers
             _service = service;
         }
 
-        [HttpPost]
+        [HttpPost("CrearFormulario")]
         public async Task<IActionResult> CrearFormulario([FromBody] CrearFormularioDto dto)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre))
@@ -25,5 +25,16 @@ namespace FormularioBack.Controllers
 
             return Ok(new { mensaje = "Formulario creado correctamente", id = formulario.IdFormulario });
         }
+
+
+        [HttpGet("ObtenerPreguntasDeFormularioById/{formularioId}")]
+        public async Task<IActionResult> ObtenerPreguntasDeFormularioById(int formularioId)
+        {
+            var preguntas = await _service.ObtenerPreguntasDeFormularioById(formularioId);
+
+            return Ok(preguntas);
+        }
+
+
     }
 }

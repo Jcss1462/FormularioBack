@@ -9,8 +9,9 @@ namespace FormularioBack.Services
     public interface IRespuestasService
     {
         Task<int> GuardarRespuestasAsync(EnviarRespuestasFormularioDto dto);
-
         Task<List<FormularioResumenDto>> ObtenerResumenFormulariosAsync();
+
+        Task<List<ObtenerResultadosDto>> ObtenerResultadosPorFormulario(int idFormulario);
     }
 
 
@@ -88,5 +89,26 @@ namespace FormularioBack.Services
 
             return formularios;
         }
+
+        public async Task<List<ObtenerResultadosDto>> ObtenerResultadosPorFormulario(int idFormulario)
+        {
+
+            List<ObtenerResultadosDto> resultados = await _context.Respuestas
+                .Where(r => r.IdFormulario == idFormulario)
+                .Select(r => new ObtenerResultadosDto
+                {
+                    IdResultado = r.IdRespuesta,
+                    CatidadRespuestasCorrectas = r.RespuestasPregunta.Count(rp =>
+                        rp.IdOpcionSeleccionadaNavigation != null &&
+                       rp.IdOpcionSeleccionadaNavigation.Correcta
+                    ),
+                    CatidadPreguntas = r.IdFormularioNavigation.FormularioHasPregunta.Count
+                })
+                .ToListAsync();
+
+            return resultados;
+
+        }
+
     }
 }

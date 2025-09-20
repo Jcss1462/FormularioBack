@@ -1,4 +1,5 @@
 ﻿using FormularioBack.Dtos;
+using FormularioBack.Models;
 using FormularioBack.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,6 +32,13 @@ namespace FormularioBack.Controllers
         {
             var resumen = await _respuestasService.ObtenerResumenFormulariosAsync();
             return Ok(resumen);
+        }
+
+
+        [HttpGet("ObtenerResultadosFormulario/{formularioId}")]
+        public async Task<IActionResult> ObtenerResultadosFormulario(int formularioId)
+        {
+            return Ok(await _respuestasService.ObtenerResultadosPorFormulario(formularioId));
         }
     }
 }

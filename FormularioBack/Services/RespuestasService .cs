@@ -11,7 +11,7 @@ namespace FormularioBack.Services
         Task<int> GuardarRespuestasAsync(EnviarRespuestasFormularioDto dto);
         Task<List<FormularioResumenDto>> ObtenerResumenFormulariosAsync();
 
-        Task<List<ObtenerResultadosDto>> ObtenerResultadosPorFormulario(int idFormulario);
+        Task<ResultadosResumenDto> ObtenerResultadosPorFormulario(int idFormulario);
 
         Task<DetalleRespuestaDto?> ObtenerDetalleRespuesta(int idRespuesta);
     }
@@ -92,8 +92,16 @@ namespace FormularioBack.Services
             return formularios;
         }
 
-        public async Task<List<ObtenerResultadosDto>> ObtenerResultadosPorFormulario(int idFormulario)
+        public async Task<ResultadosResumenDto> ObtenerResultadosPorFormulario(int idFormulario)
         {
+
+            Formulario? formulario = await _context.Formularios
+                .FirstOrDefaultAsync(f => f.IdFormulario == idFormulario);
+
+            if (formulario == null) {
+                throw new Exception("No se encontro el formulario con id:" + idFormulario);
+            }
+
 
             List<ObtenerResultadosDto> resultados = await _context.Respuestas
                 .Where(r => r.IdFormulario == idFormulario)
@@ -108,7 +116,14 @@ namespace FormularioBack.Services
                 })
                 .ToListAsync();
 
-            return resultados;
+            ResultadosResumenDto resumen = new ResultadosResumenDto
+            {
+                IdFormulario = formulario.IdFormulario,
+                Nombre = formulario.Nombre,
+                Resultados = resultados
+            };
+
+            return resumen;
 
         }
 

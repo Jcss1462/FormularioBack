@@ -13,6 +13,19 @@ builder.Services.AddDbContext<FormularioDbContext>(options =>
 builder.Services.AddScoped<IFormularioService, FormularioService>();
 builder.Services.AddScoped<IRespuestasService, RespuestasService>();
 
+//Añadimos política de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()    //permite cualquier origen
+                .AllowAnyMethod()    //permite GET, POST, PUT, DELETE, etc.
+                .AllowAnyHeader();   //permite cualquier header
+        });
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -28,6 +41,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+//Usar CORS
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 

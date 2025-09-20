@@ -12,6 +12,8 @@ namespace FormularioBack.Services
         Task<List<FormularioResumenDto>> ObtenerResumenFormulariosAsync();
 
         Task<List<ObtenerResultadosDto>> ObtenerResultadosPorFormulario(int idFormulario);
+
+        Task<DetalleRespuestaDto?> ObtenerDetalleRespuesta(int idRespuesta);
     }
 
 
@@ -108,6 +110,61 @@ namespace FormularioBack.Services
 
             return resultados;
 
+        }
+
+        public async Task<DetalleRespuestaDto?> ObtenerDetalleRespuesta(int idRespuesta)
+        {
+            var respuesta = await _context.Respuestas
+            // Incluimos el formulario asociado a la respuesta
+            .Include(r => r.IdFormularioNavigation)
+                .ThenInclude(f => f.FormularioHasPregunta)
+                    .ThenInclude(fhp => fhp.IdPreguntaNavigation)
+                        .ThenInclude(p => p.Opciones)
+
+            // Incluimos las preguntas y opciones que el usuario contestó
+            .Include(r => r.RespuestasPregunta)
+                .ThenInclude(rp => rp.IdPreguntaNavigation)
+                    .ThenInclude(p => p.Opciones)
+
+            .FirstOrDefaultAsync(r => r.IdRespuesta == idRespuesta);
+
+            if (respuesta == null) return null;
+
+            var detalleRespuesta = new DetalleRespuestaDto
+            {
+                IdRespuesta = respuesta.IdRespuesta,
+                IdFormulario = respuesta.IdFormulario,
+                NombreFormulario = respuesta.IdFormularioNavigation.Nombre,
+                FechaRespuesta = respuesta.FechaRespuesta,
+                Preguntas = respuesta.IdFormularioNavigation.FormularioHasPregunta
+                .Select(fhp =>
+                {
+                    Pregunta pregunta = fhp.IdPreguntaNavigation;
+
+                    // Buscar si el usuario respondió esta pregunta
+                    RespuestasPregunta? respuestaPregunta = respuesta.RespuestasPregunta
+                        .FirstOrDefault(rp => rp.IdPregunta == fhp.IdPregunta);
+
+                    return new DetallePreguntaDto
+                    {
+                        IdPregunta = pregunta.IdPregunta,
+                        Texto = pregunta.Pregunta1,
+                        IdOpcionSeleccionada = respuestaPregunta?.IdOpcionSeleccionada,
+                        EsCorrecta = respuestaPregunta?.IdOpcionSeleccionada != null
+                            ? pregunta.Opciones.Any(o => o.IdOpcion == respuestaPregunta.IdOpcionSeleccionada && o.Correcta)
+                            : false, // false si no contestó
+                        Opciones = pregunta.Opciones.Select(o => new DetalleOpcionDto
+                        {
+                            IdOpcion = o.IdOpcion,
+                            Texto = o.Texto,
+                            Correcta = o.Correcta
+                        }).ToList()
+                    };
+                })
+                .ToList()
+            };
+
+            return detalleRespuesta;
         }
 
     }

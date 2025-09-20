@@ -40,5 +40,15 @@ namespace FormularioBack.Controllers
         {
             return Ok(await _respuestasService.ObtenerResultadosPorFormulario(formularioId));
         }
+
+        [HttpGet("ObtenerDetalleRespuesta/{idRespuesta}")]
+        public async Task<ActionResult<DetalleRespuestaDto>> ObtenerDetalleRespuesta(int idRespuesta)
+        {
+            var resultado = await _respuestasService.ObtenerDetalleRespuesta(idRespuesta);
+            if (resultado == null)
+                return NotFound($"No existe la respuesta con Id {idRespuesta}");
+
+            return Ok(resultado);
+        }
     }
 }
